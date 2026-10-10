@@ -6,3 +6,6 @@ test_engine/__pycache__/
 # Python virtual environment
 .venv/
 venv/
+
+# Generated pytest report
+pytest-report.html

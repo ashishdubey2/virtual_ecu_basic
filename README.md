@@ -107,9 +107,13 @@ in another terminal. Install pytest in the Python environment and run:
 
 ```sh
 source <virtual_env_folder>/bin/activate
-python -m pip install pytest
+python -m pip install -r requirements-dev.txt
 python -m pytest test_engine/tests
 ```
+
+Pytest writes a self-contained HTML report to `pytest-report.html` in the
+repository root on every run. Open it in a browser to review the test summary,
+individual outcomes, and detailed failure tracebacks and captured output.
 
 The tests use `vcan0` by default and wait up to one second for each ECU
 response. Override these settings with `VIRTUAL_ECU_CAN_INTERFACE` and
