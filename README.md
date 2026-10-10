@@ -98,3 +98,25 @@ The executable can use another configured SocketCAN interface, for example
 
 This first version implements the SocketCAN interface only; the optional TCP
 endpoint can be added later without changing the CAN protocol.
+
+## Python integration tests
+
+The `test_engine/` package provides pytest integration tests for the CAN
+protocol. Start `vcan0` as described above, then start `./build/virtual_ecu`
+in another terminal. Install pytest in the Python environment and run:
+
+```sh
+source <virtual_env_folder>/bin/activate
+python -m pip install pytest
+python -m pytest test_engine/tests
+```
+
+The tests use `vcan0` by default and wait up to one second for each ECU
+response. Override these settings with `VIRTUAL_ECU_CAN_INTERFACE` and
+`VIRTUAL_ECU_TIMEOUT` (in seconds). If the configured SocketCAN interface
+does not exist or is unavailable, pytest skips the integration tests.
+
+`EthernetInterface` is provided for a future TCP gateway, not the current ECU
+executable. It expects newline-delimited JSON requests containing `can_id`,
+`rpm`, `throttle`, and `coolant_temperature`, and responses containing
+`can_id`, `rpm`, `state`, and `fault`.

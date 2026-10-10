@@ -1,0 +1,8 @@
+# Build directories
+build/
+test_engine/tests/__pycache__/
+test_engine/__pycache__/
+
+# Python virtual environment
+.venv/
+venv/
