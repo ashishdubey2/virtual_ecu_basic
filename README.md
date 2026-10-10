@@ -32,20 +32,30 @@ bytes:
 Frames with an input ID but an unexpected length are reported to standard
 error; valid frames with out-of-range values receive a fault response.
 
-## Build
+## Build and test
 
-Requirements: Linux, CMake 3.16 or newer, and a C++17 compiler.
+Requirements: Linux, CMake 3.16 or newer, a C++17 compiler, and `can-utils` for
+the CAN demo. Install these with your distribution's package manager if needed.
+
+From the repository root, configure and build the ECU:
 
 ```sh
 cmake -S ecu -B build
 cmake --build build
+```
+
+Run the unit tests:
+
+```sh
 ctest --test-dir build --output-on-failure
 ```
 
-## Run with `vcan0`
+## Run the virtual ECU with `vcan0`
 
-Create and enable the virtual CAN interface (the `ip` commands may require
-`sudo`; `vcan` may need to be available as a kernel module):
+Create and enable the virtual CAN interface. These commands may require
+`sudo`; the `vcan` kernel module must be available. Run the `ip link add`
+command only the first time you create `vcan0` (it reports an error if the
+interface already exists).
 
 ```sh
 sudo modprobe vcan
@@ -53,28 +63,37 @@ sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
 ```
 
-Start the ECU:
+Open three terminals from the repository root:
 
+**Terminal 1 — start the ECU** and leave it running:
 ```sh
 ./build/virtual_ecu
 ```
 
-With `can-utils` installed, open one terminal to monitor CAN:
-
+**Terminal 2 — listen for ECU responses:**
 ```sh
-candump vcan0
+candump vcan0,200:7FF
 ```
 
-In another terminal, send RPM 2000, throttle 40%, and coolant 85 C (`0x0050`,
-`0x28`, `0x55`):
-
+**Terminal 3 — send a test input** (RPM 2000, throttle 40%, coolant 85 C):
 ```sh
 cansend vcan0 100#07D02855
 ```
 
-The response on ID `0x200` should be `200#07D00100`. Stop the ECU with Ctrl+C.
+`cansend` is normally silent when transmission succeeds. Look in Terminal 2
+for a response similar to:
+
+```text
+vcan0  200   [4]  07 D0 01 00
+```
+
+This is CAN ID `0x200`: calculated RPM 2000 (`07 D0`), engine state `1`
+(running), and fault status `0` (no faults). Stop the ECU with Ctrl+C in
+Terminal 1. If no response appears, make sure the ECU is running without an
+error and that `vcan0` is up (`ip link show vcan0`).
+
 The executable can use another configured SocketCAN interface, for example
-`./build/virtual_ecu can0`. Remove the virtual interface when finished with
+`./build/virtual_ecu can0`. Remove `vcan0` when finished with
 `sudo ip link del vcan0`.
 
 This first version implements the SocketCAN interface only; the optional TCP
